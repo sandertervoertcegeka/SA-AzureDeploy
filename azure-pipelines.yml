@@ -50,3 +50,29 @@ stages:
             ScriptArguments: '-ResourceGroup ARMDeploymentTest'
             FailOnStandardError: true
             azurePowerShellVersion: 'LatestVersion'
+  
+  - stage: Deploy
+    condition:
+      and(
+       succeeded(), 
+       eq(variables['Build.SourceBranch'], 'refs/heads/master')
+      )
+    dependsOn:
+     test
+    jobs:
+      - job: "deployARM"
+        pool:
+          vmimage: windows-latest
+        steps:
+        - task: AzureResourceManagerTemplateDeployment@3
+          inputs:
+            deploymentScope: 'Resource Group'
+            azureResourceManagerConnection: 'SUBS-Management(0287a788-81de-44b7-b21b-54346c8e3ba6)'
+            subscriptionId: '0287a788-81de-44b7-b21b-54346c8e3ba6'
+            action: 'Create Or Update Resource Group'
+            resourceGroupName: 'ARMDeploymentTest'
+            location: 'West Europe'
+            templateLocation: 'Linked artifact'
+            csmFile: '$(Build.SourcesDirectory)/StorageAccount/azuredeploy.json'
+            csmParametersFile: '$(Build.SourcesDirectory)/StorageAccount/azuredeploy.parameters.json'
+            deploymentMode: 'Incremental'
