@@ -25,3 +25,28 @@ stages:
             csmFile: '$(Build.SourcesDirectory)/StorageAccount/azuredeploy.json'
             csmParametersFile: '$(Build.SourcesDirectory)/StorageAccount/azuredeploy.parameters.json'
             deploymentMode: 'Validation'
+        
+        - task: AzurePowerShell@5
+          inputs:
+            azureSubscription: 'SUBS-Management(0287a788-81de-44b7-b21b-54346c8e3ba6)'
+            ScriptType: 'InlineScript'
+            Inline: |
+              $Parameters = @{
+                ResourcegroupName     = "ARMDeploymentTest"
+                Templatefile          = ".\StorageAccount\azuredeploy.json"
+                TemplateParameterfile = ".\StorageAccount\azuredeploy.parameters.json"
+                Mode                  = 'Incremental'
+               }
+              $Result = Get-AzResourceGroupDeploymentWhatIfResult @Parameters
+              $Result
+            azurePowerShellVersion: 'LatestVersion'
+        
+        - task: AzurePowerShell@5
+          displayName: "Check for deletion"
+          inputs:
+            azureSubscription: 'SUBS-Management(0287a788-81de-44b7-b21b-54346c8e3ba6)'
+            ScriptType: 'FilePath'
+            ScriptPath: '$(Build.SourcesDirectory)/Tests/CheckForDeletion.ps1'
+            ScriptArguments: '-ResourceGroup ARMDeploymentTest'
+            FailOnStandardError: true
+            azurePowerShellVersion: 'LatestVersion'
