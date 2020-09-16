@@ -26,6 +26,10 @@ stages:
             csmParametersFile: '$(Build.SourcesDirectory)/StorageAccount/azuredeploy.parameters.json'
             deploymentMode: 'Validation'
         
+        - task: PowerShell@2
+          inputs:
+            targetType: 'inline'
+            script: 'Install-Module Az.Resources -RequiredVersion 1.12.1-preview -AllowPrerelease -Force -Scope CurrentUser'
         - task: AzurePowerShell@5
           inputs:
             azureSubscription: 'SUBS-Management(0287a788-81de-44b7-b21b-54346c8e3ba6)'
